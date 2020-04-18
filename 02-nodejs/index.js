@@ -39,30 +39,33 @@ function obterEndereco(idUsuario, callback) {
     }, 2000);
 }
 
-const usuarioPromise = obterUsuario()
+
 //para manipular sucesso função .then
 //para manipular erros,usamos o cath
-usuarioPromise
-    .then(function (usuario) {
-        return obterTelefone(usuario.id).then(function (telefone) {
-            usuario.telefone = telefone
-            return usuario
-        })
-    })
-    .then(function (usuario) {
-        return obterEnderecoAsync(usuario.id).then(function (endereco) {
-            usuario.endereco = endereco
-            return usuario
-        })
-    })
-    .then(function (usuario) {
+async function main() {
+    try {
+        console.time('medida-promise')
+        const usuario = await obterUsuario()
+        //const telefone = await obterTelefone(usuario.id)
+        //const endereco = await obterEnderecoAsync(usuario.id)
+        const resultado = await Promise.all([
+            obterTelefone(usuario.id),
+            obterEnderecoAsync(usuario.id)
+        ])
+        const endereco = resultado[1]
+        const telefone = resultado[0]
         console.log(`
-        Nome:${usuario.nome}
-        Telefone:(${usuario.telefone.ddd})${usuario.telefone.telefone}
-        Endereço:${usuario.endereco.rua} ${usuario.endereco.numero}
+        Nome: ${usuario.nome}
+        Telefone: (${telefone.ddd}) ${telefone.telefone}
+        Endereço:${endereco.rua} ${endereco.numero}
         `)
-    })
-    .catch(function (error) {
-        console.error('Deu ruim', error)
-    })
+        console.timeEnd('medida-promise')
+
+    } catch (error) {
+        console.error('Deu Ruim', error)
+
+    }
+
+}
+main()
 
